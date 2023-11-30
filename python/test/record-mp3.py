@@ -7,7 +7,6 @@ import io
 # Configuración
 button_pin = 2  # Cambia esto al número de pin que estés usando
 fs = 44100  # Frecuencia de muestreo
-duration = 10  # Duración máxima de grabación en segundos
 
 # Inicializar botón
 button = Button(button_pin)
@@ -15,8 +14,13 @@ button = Button(button_pin)
 # Función para grabar audio
 def record_audio():
     print("Comenzando grabación...")
-    audio_data = sd.rec(int(duration * fs), samplerate=fs, channels=1)
-    sd.wait()
+    # Iniciar una grabación infinita
+    with sd.InputStream(samplerate=fs, channels=1) as stream:
+        audio_data = []
+        while button.is_pressed:
+            data, _ = stream.read(fs)
+            audio_data.append(data)
+        audio_data = np.concatenate(audio_data, axis=0)
     print("Grabación finalizada")
     return audio_data
 
@@ -36,5 +40,4 @@ print("Presione el botón para grabar.")
 while True:
     button.wait_for_press()
     audio_data = record_audio()
-    button.wait_for_release()
     save_audio(audio_data)
