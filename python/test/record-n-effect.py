@@ -57,14 +57,14 @@ def save_audio(audio_data, filename):
     audio.export(filename, format="mp3")
     print(f"Audio guardado como {filename}")
 
-# Tonalidades predefinidas (en semitonos)
-tonalidades = [-2, -1, 1]  # Ejemplo: -2 semitonos, tono original, +2 semitonos
+# Velocidades de reproducción para simular diferentes tonalidades
+velocidades = [0.8, 0.9, 1.1]  # Ejemplo: 0.9x, 1.0x (normal), 1.1x
 
 # Función para aplicar efectos de audio
 def apply_audio_effects(audio_segment):
-    # Elegir una tonalidad aleatoria
-    tonalidad = random.choice(tonalidades)
-    return audio_segment._spawn(audio_segment.raw_data).shift(tonalidad)
+    # Elegir una velocidad aleatoria
+    velocidad = random.choice(velocidades)
+    return audio_segment.speedup(playback_speed=velocidad)
 
 # Función para reproducir audios de forma aleatoria con efectos
 def play_random_recordings_with_effects():
@@ -88,6 +88,7 @@ def play_random_recordings_with_effects():
                 playback.wait_done()
         except Exception as e:
             print(f"Error al reproducir con efectos: {e}")
+
 # Hilo para reproducir grabaciones
 playback_thread = threading.Thread(target=play_random_recordings_with_effects, daemon=True)
 playback_thread.start()
