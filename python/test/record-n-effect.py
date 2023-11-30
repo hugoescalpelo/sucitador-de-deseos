@@ -6,6 +6,7 @@ import datetime
 import random
 import threading
 import os
+import simpleaudio as sa
 
 # Configuración
 button_pin = 4  # Cambia esto al número de pin que estés usando
@@ -75,8 +76,13 @@ def play_random_recordings():
                 filename = random.choice(files)
                 file_path = os.path.join(recordings_folder, filename)
                 audio = AudioSegment.from_file(file_path)
-                playback = audio.export(format="wav")
-                os.system(f"aplay {playback.name}")
+                playback = sa.play_buffer(
+                    audio.raw_data, 
+                    num_channels=audio.channels, 
+                    bytes_per_sample=audio.sample_width, 
+                    sample_rate=audio.frame_rate
+                )
+                playback.wait_done()
         except Exception as e:
             print(f"Error al reproducir: {e}")
 
