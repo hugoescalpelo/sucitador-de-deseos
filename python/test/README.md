@@ -9,9 +9,10 @@ This test are used to find a way to the main program. This program is to be used
     - gpiozero 
     - sounddevice
     - pydub
+    - simpleaudio
 
 Use the following command to install libraries.
 
 ```
-pip install gpiozero sounddevice pydub
+pip install gpiozero sounddevice pydub simpleaudio
 ```
