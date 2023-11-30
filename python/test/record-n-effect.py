@@ -2,12 +2,11 @@ from gpiozero import Button
 import sounddevice as sd
 from pydub import AudioSegment
 import numpy as np
-import io
 import datetime
 import random
 import threading
 import os
-import simpleaudio as sa
+import subprocess
 
 # Configuración
 button_pin = 4  # Cambia esto al número de pin que estés usando
@@ -57,39 +56,34 @@ def save_audio(audio_data, filename):
     audio.export(filename, format="mp3")
     print(f"Audio guardado como {filename}")
 
-# Cambios de tono para la privacidad (en semitonos)
-cambios_de_tono = [-4, -2, 2, 4]  # Ejemplo: -4, -2, +2, +4 semitonos
+# Función para cambiar la tonalidad usando ffmpeg
+def change_pitch(filename, semitones):
+    output_file = f"pitch_changed_{filename}"
+    subprocess.run(["ffmpeg", "-i", filename, "-filter_complex", f"rubberband=pitch={semitones}", output_file])
+    return output_file
 
-# Función para aplicar cambio de tono usando ffmpeg
-def apply_pitch_shift(audio_segment, semitones):
-    return audio_segment._spawn(audio_segment.raw_data).shift(semitones)
-
-# Función para reproducir audios de forma aleatoria con cambio de tono
-def play_random_recordings_with_pitch_shift():
+# Función para reproducir audios de forma aleatoria con cambio de tonalidad
+def play_random_recordings_with_pitch_change():
     while True:
         try:
             files = os.listdir(recordings_folder)
             if files:
                 filename = random.choice(files)
                 file_path = os.path.join(recordings_folder, filename)
-                audio = AudioSegment.from_file(file_path)
 
-                # Aplicar cambio de tono
-                semitones = random.choice(cambios_de_tono)
-                audio_with_pitch_shift = apply_pitch_shift(audio, semitones)
+                # Cambiar la tonalidad
+                semitones = random.choice([-4, -2, 2, 4])
+                changed_file = change_pitch(file_path, semitones)
 
-                playback = sa.play_buffer(
-                    audio_with_pitch_shift.raw_data, 
-                    num_channels=audio_with_pitch_shift.channels, 
-                    bytes_per_sample=audio_with_pitch_shift.sample_width, 
-                    sample_rate=audio_with_pitch_shift.frame_rate
-                )
-                playback.wait_done()
+                # Reproducir el archivo con tonalidad cambiada
+                audio = AudioSegment.from_file(changed_file)
+                playback = audio.export(format="wav")
+                os.system(f"aplay {playback.name}")
         except Exception as e:
-            print(f"Error al reproducir con cambio de tono: {e}")
+            print(f"Error al reproducir con cambio de tonalidad: {e}")
 
-# Iniciar el hilo de reproducción con cambio de tono
-playback_thread = threading.Thread(target=play_random_recordings_with_pitch_shift, daemon=True)
+# Iniciar el hilo de reproducción con cambio de tonalidad
+playback_thread = threading.Thread(target=play_random_recordings_with_pitch_change, daemon=True)
 playback_thread.start()
 
 # Loop principal
