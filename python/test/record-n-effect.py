@@ -57,17 +57,15 @@ def save_audio(audio_data, filename):
     audio.export(filename, format="mp3")
     print(f"Audio guardado como {filename}")
 
-# Velocidades de reproducción para simular diferentes tonalidades
-velocidades = [0.8, 0.9, 1.1]  # Ejemplo: 0.9x, 1.0x (normal), 1.1x
+# Cambios de tono para la privacidad (en semitonos)
+cambios_de_tono = [-4, -2, 2, 4]  # Ejemplo: -4, -2, +2, +4 semitonos
 
-# Función para aplicar efectos de audio
-def apply_audio_effects(audio_segment):
-    # Elegir una velocidad aleatoria
-    velocidad = random.choice(velocidades)
-    return audio_segment.speedup(playback_speed=velocidad)
+# Función para aplicar cambio de tono usando ffmpeg
+def apply_pitch_shift(audio_segment, semitones):
+    return audio_segment._spawn(audio_segment.raw_data).shift(semitones)
 
-# Función para reproducir audios de forma aleatoria con efectos
-def play_random_recordings_with_effects():
+# Función para reproducir audios de forma aleatoria con cambio de tono
+def play_random_recordings_with_pitch_shift():
     while True:
         try:
             files = os.listdir(recordings_folder)
@@ -76,21 +74,22 @@ def play_random_recordings_with_effects():
                 file_path = os.path.join(recordings_folder, filename)
                 audio = AudioSegment.from_file(file_path)
 
-                # Aplicar efectos de audio
-                audio_with_effects = apply_audio_effects(audio)
+                # Aplicar cambio de tono
+                semitones = random.choice(cambios_de_tono)
+                audio_with_pitch_shift = apply_pitch_shift(audio, semitones)
 
                 playback = sa.play_buffer(
-                    audio_with_effects.raw_data, 
-                    num_channels=audio_with_effects.channels, 
-                    bytes_per_sample=audio_with_effects.sample_width, 
-                    sample_rate=audio_with_effects.frame_rate
+                    audio_with_pitch_shift.raw_data, 
+                    num_channels=audio_with_pitch_shift.channels, 
+                    bytes_per_sample=audio_with_pitch_shift.sample_width, 
+                    sample_rate=audio_with_pitch_shift.frame_rate
                 )
                 playback.wait_done()
         except Exception as e:
-            print(f"Error al reproducir con efectos: {e}")
+            print(f"Error al reproducir con cambio de tono: {e}")
 
-# Hilo para reproducir grabaciones
-playback_thread = threading.Thread(target=play_random_recordings_with_effects, daemon=True)
+# Iniciar el hilo de reproducción con cambio de tono
+playback_thread = threading.Thread(target=play_random_recordings_with_pitch_shift, daemon=True)
 playback_thread.start()
 
 # Loop principal
