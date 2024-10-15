@@ -48,4 +48,4 @@ En este documento encontrarás las instrucciones de configuracicón para realiza
     sudo pip3 install pydub --break-system-packages
     ```
 - Conecta el microfono USB y el botón en los pines GND y 4, no tienen polaridad.
-- Prueba el programa con el comando 
+- Prueba el programa 
